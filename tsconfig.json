@@ -6,6 +6,10 @@
 		"module": "es2022",
 		"moduleResolution": "bundler",
 		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
 		"allowJs": true,
 		"checkJs": false,
 		"noEmit": true,
@@ -14,10 +18,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"skipLibCheck": true,
-		"types": [
-			"./worker-configuration.d.ts",
-			"node"
-		]
+		"types": ["./worker-configuration.d.ts", "node"]
 	},
 	"include": ["worker-configuration.d.ts", "src/**/*.ts"]
 }

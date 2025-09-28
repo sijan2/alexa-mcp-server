@@ -1,71 +1,82 @@
-import { McpAgent } from "agents/mcp";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { announceHandler } from "@/api/v1/announce";
+// Import API route handlers
+import { bedroomHandler } from "@/api/v1/bedroom";
+import { lightsApp } from "@/api/v1/lights";
+import { musicHandler } from "@/api/v1/music";
+import { volumeApp } from "@/api/v1/volume";
+import { sensorsApp } from "@/api/v1/sensors";
+import { dndApp } from "@/api/v1/dnd";
+import { HomeIOMCP } from "@/mcp/server";
+import type { Env } from "@/types/env";
 
-// Define our MCP agent with tools
-export class MyMCP extends McpAgent {
-	server = new McpServer({
-		name: "Authless Calculator",
+const app = new Hono<{ Bindings: Env }>();
+
+// Enable CORS
+app.use("*", cors());
+
+// Health check
+app.get("/", (c) => {
+	return c.json({
+		name: "Alexa MCP Server",
 		version: "1.0.0",
+		endpoints: {
+			api: "/api",
+			bedroom: "/api/bedroom",
+			announce: "/api/announce",
+			music: "/api/music",
+			lights: "/api/lights",
+			volume: "/api/volume",
+			sensors: "/api/sensors",
+			dnd: "/api/dnd",
+			mcp: "/mcp",
+			sse: "/sse",
+			health: "/health",
+		},
 	});
+});
 
-	async init() {
-		// Simple addition tool
-		this.server.tool("add", { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-			content: [{ type: "text", text: String(a + b) }],
-		}));
+// Health endpoint
+app.get("/health", (c) => {
+	return c.json({
+		status: "healthy",
+		timestamp: new Date().toISOString(),
+	});
+});
 
-		// Calculator tool with multiple operations
-		this.server.tool(
-			"calculate",
-			{
-				operation: z.enum(["add", "subtract", "multiply", "divide"]),
-				a: z.number(),
-				b: z.number(),
-			},
-			async ({ operation, a, b }) => {
-				let result: number;
-				switch (operation) {
-					case "add":
-						result = a + b;
-						break;
-					case "subtract":
-						result = a - b;
-						break;
-					case "multiply":
-						result = a * b;
-						break;
-					case "divide":
-						if (b === 0)
-							return {
-								content: [
-									{
-										type: "text",
-										text: "Error: Cannot divide by zero",
-									},
-								],
-							};
-						result = a / b;
-						break;
-				}
-				return { content: [{ type: "text", text: String(result) }] };
-			},
-		);
-	}
-}
+// API v1 routes
+app.get("/api/bedroom", bedroomHandler);
+app.post("/api/announce", announceHandler);
+app.get("/api/music", musicHandler);
+
+// Light control routes
+app.route("/api/lights", lightsApp);
+
+// Volume control routes
+app.route("/api/volume", volumeApp);
+
+// Sensor routes
+app.route("/api/sensors", sensorsApp);
+
+// DND routes
+app.route("/api/dnd", dndApp);
 
 export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
 		if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-			return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
+			return HomeIOMCP.serveSSE("/sse").fetch(request, env, ctx);
 		}
 
 		if (url.pathname === "/mcp") {
-			return MyMCP.serve("/mcp").fetch(request, env, ctx);
+			return HomeIOMCP.serve("/mcp").fetch(request, env, ctx);
 		}
 
-		return new Response("Not found", { status: 404 });
+		// Handle all other routes with Hono app
+		return app.fetch(request, env, ctx);
 	},
 };
+
+export { HomeIOMCP };
