@@ -23,6 +23,26 @@ Super simple setup - just paste 2 cookie values from Amazon.com!
    pnpm install && pnpm run deploy
    ```
 
+## Local Development & Testing
+
+### Running Locally
+1. Start development server: `pnpm dev`
+2. Server runs at `localhost:8787`
+
+### Testing with MCP Inspector
+1. Run MCP Inspector: `pnpm dlx @modelcontextprotocol/inspector@latest`
+2. Use SSE endpoint: `http://localhost:8787/sse`
+3. Test MCP server functionality through the inspector
+
+### Deployment to Cloudflare
+1. Deploy: `wrangler deploy`
+2. Add secrets to deployed worker:
+   ```bash
+   wrangler secret put UBID_MAIN
+   wrangler secret put AT_MAIN
+   ```
+3. Use the provided base URL as your `API_BASE`
+
 **That's it!** The server automatically builds proper cookies with `csrf=1`
 
 ## What Works

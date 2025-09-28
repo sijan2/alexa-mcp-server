@@ -36,34 +36,32 @@ alexa-mcp-server/
 │   │   └── v1/
 │   │       ├── announce.ts      # Announcement endpoints
 │   │       ├── bedroom.ts       # Bedroom sensor data
+│   │       ├── dnd.ts           # Do Not Disturb endpoints
 │   │       ├── lights.ts        # Light control endpoints
 │   │       ├── music.ts         # Music/Spotify status
-│   │       └── weather.ts       # Weather information
+│   │       ├── sensors.ts       # Sensor data endpoints
+│   │       └── volume.ts        # Volume control endpoints
 │   ├── mcp/
 │   │   ├── server.ts            # Main MCP server class
 │   │   └── tools/               # Individual MCP tool implementations
 │   │       ├── announcements.ts # Voice announcement tools
 │   │       ├── bedroom.ts       # Bedroom monitoring tools
+│   │       ├── devices.ts       # Device management tools
+│   │       ├── dnd.ts           # Do Not Disturb tools
 │   │       ├── lights.ts        # Light control tools
 │   │       ├── music.ts         # Music status tools
-│   │       └── weather.ts       # Weather information tools
+│   │       ├── sensors.ts       # Sensor monitoring tools
+│   │       └── volume.ts        # Volume control tools
 │   ├── schemas/                 # Zod validation schemas
-│   │   ├── announcements.ts
-│   │   ├── lights.ts
-│   │   ├── bedroom.ts
+│   │   ├── alexa.ts
 │   │   └── common.ts
-│   ├── services/                # Business logic and external API calls
-│   │   ├── alexa.ts            # Alexa API integration
-│   │   ├── spotify.ts          # Spotify API integration
-│   │   └── weather.ts          # Weather API integration
+│   ├── utils/                   # Utility functions and API integrations
+│   │   ├── alexa.ts            # Alexa API client
+│   │   └── alexa-dynamic.ts    # Dynamic Alexa API helpers
 │   ├── types/                   # TypeScript type definitions
 │   │   ├── env.ts              # Environment variable types
 │   │   ├── mcp.ts              # MCP-specific types
 │   │   └── alexa.ts            # Alexa API response types
-│   └── lib/                     # Utility functions
-│       ├── config.ts           # Configuration constants
-│       ├── validation.ts       # Input validation helpers
-│       └── errors.ts           # Error handling utilities
 ├── biome.json                   # Code formatting and linting
 ├── package.json
 ├── tsconfig.json
@@ -115,7 +113,10 @@ export class AlexaMCP extends McpAgent {
     this.registerLightControlTools();
     this.registerBedroomMonitoringTools();
     this.registerMusicStatusTools();
-    this.registerWeatherTools();
+    this.registerDeviceManagementTools();
+    this.registerDoNotDisturbTools();
+    this.registerSensorTools();
+    this.registerVolumeControlTools();
   }
 }
 ```
@@ -168,8 +169,17 @@ Handles communication with external APIs:
 ### Music Status Tools
 - `get_music_status()` - Current playback status from Alexa/Spotify integration
 
-### Weather Information Tools
-- `get_weather_summary()` - Current weather conditions and air quality
+### Device Management Tools
+- Device control and management capabilities
+
+### Do Not Disturb Tools  
+- `set_dnd(enabled)` - Control Do Not Disturb mode for devices
+
+### Sensor Tools
+- `get_sensor_data()` - Access various sensor readings
+
+### Volume Control Tools
+- `set_volume(level)` - Control device volume levels
 
 ## MCP Resources (Live Context)
 
